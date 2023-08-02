@@ -18,11 +18,11 @@ _✨ NoneBot 命运方舟国服流浪商人刷新时间查看 自动播报稀有
 </div>
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/emiyagm/nonebot-plugin-loastark-wandering-trader/main/LICENSE">
-    <img src="https://img.shields.io/github/license/emiyagm/nonebot-plugin-loastark-wandering-trader.svg" alt="license">
+  <a href="https://raw.githubusercontent.com/emiyagm/nonebot-plugin-lostark-wandering-trader/main/LICENSE">
+    <img src="https://img.shields.io/github/license/emiyagm/nonebot-plugin-lostark-wandering-trader.svg" alt="license">
   </a>
-  <a href="https://pypi.python.org/pypi/nonebot-plugin-loastark-wandering-trader">
-    <img src="https://img.shields.io/pypi/v/nonebot-plugin-loastark-wandering-trader.svg" alt="pypi">
+  <a href="https://pypi.python.org/pypi/nonebot-plugin-lostark-wandering-trader">
+    <img src="https://img.shields.io/pypi/v/nonebot-plugin-lostark-wandering-trader.svg" alt="pypi">
   </a>
   <img src="https://img.shields.io/badge/python-3.7+-blue.svg" alt="python">
 </p>
