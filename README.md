@@ -24,8 +24,33 @@ _✨ NoneBot 命运方舟国服流浪商人刷新时间查看 自动播报稀有
   <a href="https://pypi.python.org/pypi/nonebot-plugin-lostark-wandering-trader">
     <img src="https://img.shields.io/pypi/v/nonebot-plugin-lostark-wandering-trader.svg" alt="pypi">
   </a>
-  <img src="https://img.shields.io/badge/python-3.7+-blue.svg" alt="python">
+  <img src="https://img.shields.io/badge/python-3.8+-blue.svg" alt="python">
 </p>
+
+## 安装
+
+```bash
+nb plugin install nonebot_plugin_lostark_wandering_trader
+```
+或者
+```bash
+pip install nonebot_plugin_lostark_wandering_trader
+```
+
+## 更新
+
+```bash
+nb plugin update nonebot_plugin_lostark_wandering_trader
+```
+或者
+```bash
+pip install nonebot_plugin_lostark_wandering_trader -U
+```
+
+### 导入插件
+- 在`pyproject.toml`里的`[tool.nonebot]`中添加`plugins = ["nonebot_plugin_lostark_wandering_trader"]`
+
+**注**：如果你使用`nb`安装插件，则不需要设置此项
 
 ## 使用方式
 
@@ -100,3 +125,7 @@ TRADER__GROUP_IDS=[12345678,87654321]
 TRADER__TIME=1
 TRADER__SERVER_ID=14
 ```
+
+## 说明
+
+数据来源：https://www.emrpg.com
