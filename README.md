@@ -34,7 +34,7 @@ nb plugin install nonebot_plugin_lostark_wandering_trader
 ```
 或者
 ```bash
-pip install nonebot_plugin_lostark_wandering_trader
+pip install nonebot-plugin-lostark-wandering-trader
 ```
 
 ## 更新
@@ -44,7 +44,7 @@ nb plugin update nonebot_plugin_lostark_wandering_trader
 ```
 或者
 ```bash
-pip install nonebot_plugin_lostark_wandering_trader -U
+pip install nonebot-plugin-lostark-wandering-trader -U
 ```
 
 ### 导入插件
