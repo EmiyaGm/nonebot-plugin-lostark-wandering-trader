@@ -4,7 +4,6 @@ from nonebot.plugin import PluginMetadata
 from nonebot.adapters.onebot.v11 import MessageEvent, MessageSegment
 from nonebot import on_keyword, require, get_bot, get_bots, get_driver
 from httpx import Response, AsyncClient
-import http.client
 import datetime
 from .config import Config
 
@@ -60,14 +59,12 @@ async def check_trader():
                         card = item.get('_card', {})
                         rarity = card.get('rarity', '')
                         if rarity == 'Epic' or rarity == 'Legendary' or rarity == 'Rare':
-                            print('getcard')
                             location = item.get('_location', {})
                             lname = location.get('name', '')
                             cname = card.get('name', '')
                             image = location.get('snapshot', '')
                             response = lname + f' 出{cname}了！'
                             for qq in plugin_config.user_ids:
-                                print('send_card')
                                 await bot.call_api('send_private_msg', **{
                                     'user_id': qq,
                                     'message': response
