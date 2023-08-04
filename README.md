@@ -81,6 +81,15 @@ pip install nonebot-plugin-lostark-wandering-trader -U
 - 默认: `1`
 - 说明: 检测流浪商人位置结果间隔时间
 
+### TRADER__RARITY
+
+- 类型: `list`
+- 默认值: `[]`
+- 说明: 需要通告的卡牌的稀有度，如果不填或是空，则默认会将 Rare 稀有度包括 Rare 以上的卡牌都通告
+  - Rare : 蓝色
+  - Epic : 紫色
+  - Legendary : 橙色
+
 ### TRADER__SERVER_ID
 
 - 类型: `int`
@@ -124,6 +133,7 @@ TRADER__USER_IDS=[12345678,87654321]
 TRADER__GROUP_IDS=[12345678,87654321]
 TRADER__TIME=1
 TRADER__SERVER_ID=14
+TRADER__RARITY=["Rare","Epic","Legendary"]
 ```
 
 ## 说明

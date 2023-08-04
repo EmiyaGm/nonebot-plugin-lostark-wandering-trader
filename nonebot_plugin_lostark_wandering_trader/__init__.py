@@ -58,7 +58,16 @@ async def check_trader():
                     if can_notice:
                         card = item.get('_card', {})
                         rarity = card.get('rarity', '')
-                        if rarity == 'Epic' or rarity == 'Legendary' or rarity == 'Rare':
+                        rarity_array = []
+                        if len(plugin_config.rarity) == 0:
+                            rarity_array = ['Epic', 'Legendary', 'Rare']
+                        else:
+                            rarity_array = plugin_config.rarity
+                        confirm = False
+                        for rItem in rarity_array:
+                            if rItem == rarity:
+                                confirm = True
+                        if confirm:
                             location = item.get('_location', {})
                             lname = location.get('name', '')
                             cname = card.get('name', '')
@@ -99,8 +108,12 @@ async def get_detail(displayAt):
         'Host': 'www.emrpg.com',
         'Connection': 'keep-alive'
         }
-        res = await client.get(f"https://www.emrpg.com/plugin.php?displayAt={displayAt}&fromServer=lostarkcn&serverId={plugin_config.server_id}&uri=merchants/active&_pipes=withCard,withRapport,withLocation,withMember&id=tj_emrpg", headers=headers)
-        result = res.json().get('data' , [])
+        result = []
+        try:
+            res = await client.get(f"https://www.emrpg.com/plugin.php?displayAt={displayAt}&fromServer=lostarkcn&serverId={plugin_config.server_id}&uri=merchants/active&_pipes=withCard,withRapport,withLocation,withMember&id=tj_emrpg", headers=headers)
+            result = res.json().get('data' , [])
+        except:
+            result = []
         return result
 
 async def get_data():
@@ -113,8 +126,12 @@ async def get_data():
         'Host': 'www.emrpg.com',
         'Connection': 'keep-alive'
         }
-        res = await client.get(f"https://www.emrpg.com/plugin.php?fromServer=lostarkcn&serverId={plugin_config.server_id}&uri=merchants/list&id=tj_emrpg", headers=headers)
-        result = res.json().get('data' , [])
+        result = []
+        try:
+            res = await client.get(f"https://www.emrpg.com/plugin.php?fromServer=lostarkcn&serverId={plugin_config.server_id}&uri=merchants/list&id=tj_emrpg", headers=headers)
+            result = res.json().get('data' , [])
+        except:
+            result = []
         return result
 
 
@@ -149,5 +166,3 @@ async def _(matcher: Matcher, event: MessageEvent):
         else:
             response = '暂无数据'
     await trader.finish(response)
-
-
