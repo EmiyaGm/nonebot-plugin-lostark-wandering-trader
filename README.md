@@ -90,6 +90,14 @@ pip install nonebot-plugin-lostark-wandering-trader -U
   - Epic : 紫色
   - Legendary : 橙色
 
+### TRADER__SEND_TYPE
+
+- 类型: `list`
+- 默认值: `[]`
+- 说明: 需要通告的内容，如果不填或是空，则默认会将卡牌以及橙色的礼物都通告
+  - Card : 卡牌
+  - Rapport : 礼物
+
 ### TRADER__SERVER_ID
 
 - 类型: `int`

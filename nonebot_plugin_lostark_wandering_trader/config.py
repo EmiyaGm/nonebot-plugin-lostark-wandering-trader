@@ -7,6 +7,7 @@ class ScopedConfig(BaseModel):
     time: int = 1
     server_id: int = 14
     rarity: list[str] = []
+    send_type: list[str] = []
 
 
 class Config(BaseModel):

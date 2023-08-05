@@ -5,6 +5,7 @@ from nonebot.adapters.onebot.v11 import MessageEvent, MessageSegment
 from nonebot import on_keyword, require, get_bot, get_bots, get_driver
 from httpx import Response, AsyncClient
 import datetime
+import time
 from .config import Config
 
 __plugin_meta__ = PluginMetadata(
@@ -22,11 +23,20 @@ require("nonebot_plugin_apscheduler")
 
 from nonebot_plugin_apscheduler import scheduler
 
-plugin_config = Config.parse_obj(get_driver().config).trader
-
+try:
+    plugin_config = Config.parse_obj(get_driver().config).trader.dict()
+except:
+    plugin_config = {
+        'user_ids': [],
+        'group_ids': [],
+        'time': 1,
+        'server_id': 6,
+        'rarity': [],
+    }
+    
 notice_data = []
 
-@scheduler.scheduled_job("cron", minute=f"*/{plugin_config.time}", id="check_trader")
+@scheduler.scheduled_job("cron", minute=f"*/{plugin_config.get('time')}", id="check_trader")
 async def check_trader():
     global notice_data
     bots = get_bots().values()
@@ -44,53 +54,83 @@ async def check_trader():
         time_two = datetime.datetime.strptime( date + ' ' + hour + ':55:00', '%Y-%m-%d %H:%M:%S')
 
         response = ''
-
+        
         if now < time_two and now > time_one:
             result = await get_detail(int(time_start.timestamp()))
             if len(result) != 0:
                 for item in result:
                     can_notice = True
                     for notice in notice_data[index]:
-                        nid = notice.get('id', '')
-                        id = item.get('id', '')
+                        nid = notice.get('locationId', '')
+                        id = item.get('locationId', '')
                         if nid == id:
                             can_notice = False
                     if can_notice:
                         card = item.get('_card', {})
+                        rapport = item.get('_rapport', {})
                         rarity = card.get('rarity', '')
                         rarity_array = []
-                        if len(plugin_config.rarity) == 0:
+                        send_type_array = []
+                        if len(plugin_config.get('send_type')) == 0:
+                            send_type_array = ['card', 'rapport']
+                        else:
+                            send_type_array = plugin_config.get('send_type')
+                        if len(plugin_config.get('rarity')) == 0:
                             rarity_array = ['Epic', 'Legendary', 'Rare']
                         else:
-                            rarity_array = plugin_config.rarity
+                            rarity_array = plugin_config.get('rarity')
                         confirm = False
                         for rItem in rarity_array:
-                            if rItem == rarity:
+                            if rItem == rarity and "card" in send_type_array:
                                 confirm = True
+                        location = item.get('_location', {})
+                        image = location.get('snapshot', '')
+                        lname = location.get('name', '')
+                        member = item.get('_member', {})
+                        username = member.get('username', '未知人士')
                         if confirm:
-                            location = item.get('_location', {})
-                            lname = location.get('name', '')
                             cname = card.get('name', '')
-                            image = location.get('snapshot', '')
-                            response = lname + f' 出{cname}了！' + f'稀有度为{rarity}'
-                            for qq in plugin_config.user_ids:
+                            response = lname + f' 出{cname}了！' + f'稀有度为{rarity}' + f' 提报人: {username}'
+                            for qq in plugin_config.get('user_ids'):
                                 await bot.call_api('send_private_msg', **{
                                     'user_id': qq,
                                     'message': response
                                 })
-                                await bot.call_api('send_private_msg', **{
-                                    'user_id': qq,
-                                    'message': MessageSegment.image(f"https://www.emrpg.com/{image}")
-                                })
-                            for group in plugin_config.group_ids:
+                            for group in plugin_config.get('group_ids'):
                                 await bot.call_api('send_group_msg', **{
                                     'group_id': group,
                                     'message': response
                                 })
+                            time.sleep(1)
+                        rapport_confirm = False
+                        if rapport.get('rarity') == 'Legendary' and "rapport" in send_type_array:
+                            rapport_confirm = True
+                        if rapport_confirm:
+                            rname = rapport.get('name', '')
+                            response = lname + f' 出{rname}了！' + '稀有度为传说' + f' 提报人: {username}'
+                            for qq in plugin_config.get('user_ids'):
+                                await bot.call_api('send_private_msg', **{
+                                    'user_id': qq,
+                                    'message': response
+                                })
+                            for group in plugin_config.get('group_ids'):
+                                await bot.call_api('send_group_msg', **{
+                                    'group_id': group,
+                                    'message': response
+                                })
+                            time.sleep(1)
+                        if confirm or rapport_confirm:
+                            for qq in plugin_config.get('user_ids'):
+                                await bot.call_api('send_private_msg', **{
+                                    'user_id': qq,
+                                    'message': MessageSegment.image(f"https://www.emrpg.com/{image}")
+                                })
+                            for group in plugin_config.get('group_ids'):
                                 await bot.call_api('send_group_msg', **{
                                     'group_id': group,
                                     'message': MessageSegment.image(f"https://www.emrpg.com/{image}")
                                 })
+                            time.sleep(1)
                 notice_data[index] = result
         else:
             notice_data[index] = []
@@ -110,7 +150,7 @@ async def get_detail(displayAt):
         }
         result = []
         try:
-            res = await client.get(f"https://www.emrpg.com/plugin.php?displayAt={displayAt}&fromServer=lostarkcn&serverId={plugin_config.server_id}&uri=merchants/active&_pipes=withCard,withRapport,withLocation,withMember&id=tj_emrpg", headers=headers)
+            res = await client.get(f"https://www.emrpg.com/plugin.php?displayAt={displayAt}&fromServer=lostarkcn&serverId={plugin_config.get('server_id')}&uri=merchants/active&_pipes=withCard,withRapport,withLocation,withMember&id=tj_emrpg", headers=headers)
             result = res.json().get('data' , [])
         except:
             result = []
@@ -128,7 +168,7 @@ async def get_data():
         }
         result = []
         try:
-            res = await client.get(f"https://www.emrpg.com/plugin.php?fromServer=lostarkcn&serverId={plugin_config.server_id}&uri=merchants/list&id=tj_emrpg", headers=headers)
+            res = await client.get(f"https://www.emrpg.com/plugin.php?fromServer=lostarkcn&serverId={plugin_config.get('server_id')}&uri=merchants/list&id=tj_emrpg", headers=headers)
             result = res.json().get('data' , [])
         except:
             result = []
