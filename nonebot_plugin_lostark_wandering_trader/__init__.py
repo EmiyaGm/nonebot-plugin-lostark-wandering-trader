@@ -32,6 +32,7 @@ except:
         'time': 1,
         'server_id': 6,
         'rarity': [],
+        'send_type': []
     }
     
 notice_data = []
@@ -96,11 +97,14 @@ async def check_trader():
                                     'user_id': qq,
                                     'message': response
                                 })
-                            for group in plugin_config.get('group_ids'):
-                                await bot.call_api('send_group_msg', **{
-                                    'group_id': group,
-                                    'message': response
-                                })
+                            try:
+                                for group in plugin_config.get('group_ids'):
+                                    await bot.call_api('send_group_msg', **{
+                                        'group_id': group,
+                                        'message': response
+                                    })
+                            except:
+                                pass
                             time.sleep(1)
                         rapport_confirm = False
                         if rapport.get('rarity') == 'Legendary' and "rapport" in send_type_array:
@@ -113,11 +117,14 @@ async def check_trader():
                                     'user_id': qq,
                                     'message': response
                                 })
-                            for group in plugin_config.get('group_ids'):
-                                await bot.call_api('send_group_msg', **{
-                                    'group_id': group,
-                                    'message': response
-                                })
+                            try:
+                                for group in plugin_config.get('group_ids'):
+                                    await bot.call_api('send_group_msg', **{
+                                        'group_id': group,
+                                        'message': response
+                                    })
+                            except:
+                                pass
                             time.sleep(1)
                         if confirm or rapport_confirm:
                             for qq in plugin_config.get('user_ids'):
@@ -125,11 +132,14 @@ async def check_trader():
                                     'user_id': qq,
                                     'message': MessageSegment.image(f"https://www.emrpg.com/{image}")
                                 })
-                            for group in plugin_config.get('group_ids'):
-                                await bot.call_api('send_group_msg', **{
-                                    'group_id': group,
-                                    'message': MessageSegment.image(f"https://www.emrpg.com/{image}")
-                                })
+                            try:
+                                for group in plugin_config.get('group_ids'):
+                                    await bot.call_api('send_group_msg', **{
+                                        'group_id': group,
+                                        'message': MessageSegment.image(f"https://www.emrpg.com/{image}")
+                                    })
+                            except:
+                                pass
                             time.sleep(1)
                 notice_data[index] = result
         else:
