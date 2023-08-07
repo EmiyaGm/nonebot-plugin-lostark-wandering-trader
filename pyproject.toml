@@ -1,6 +1,6 @@
 [project]
 name = "nonebot_plugin_lostark_wandering_trader"
-version = "0.0.3"
+version = "0.0.6"
 description = "NoneBot lostark cn wandering trader plugin"
 authors = [
     {name = "EmiyaGm", email = "464723943@qq.com"},
@@ -18,12 +18,3 @@ readme = "README.md"
 [project.urls]
 "Homepage" = "https://github.com/EmiyaGm/nonebot-plugin-lostark-wandering-trader"
 "Bug Tracker" = "https://github.com/EmiyaGm/nonebot-plugin-lostark-wandering-trader/issues"
-
-[tool.pdm.build]
-includes = []
-
-[tool.pdm.dev-dependencies]
-
-[build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
