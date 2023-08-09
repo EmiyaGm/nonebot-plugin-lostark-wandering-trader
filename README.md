@@ -27,6 +27,9 @@ _✨ NoneBot 命运方舟国服流浪商人刷新时间查看 自动播报稀有
   <img src="https://img.shields.io/badge/python-3.8+-blue.svg" alt="python">
 </p>
 
+## 重要提示
+因为国服更新了韩服最近的流浪商人机制，已经不再需要提示了，所以本插件暂停更新
+
 ## 安装
 
 ```bash

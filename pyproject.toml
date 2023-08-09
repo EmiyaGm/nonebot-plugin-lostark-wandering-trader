@@ -1,6 +1,6 @@
 [project]
 name = "nonebot_plugin_lostark_wandering_trader"
-version = "0.0.8"
+version = "0.0.9"
 description = "NoneBot lostark cn wandering trader plugin"
 authors = [
     {name = "EmiyaGm", email = "464723943@qq.com"},
