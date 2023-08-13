@@ -32,6 +32,7 @@ except:
         'time': 1,
         'server_id': 6,
         'rarity': [],
+        'send_type': []
     }
     
 notice_data = []
@@ -46,7 +47,7 @@ async def check_trader():
     for index,bot in enumerate(bots):
         now = datetime.datetime.now()
 
-        hour = str(now.hour)
+        hour = now.hour
 
         date = datetime.datetime.now().date().isoformat()
         
@@ -55,21 +56,20 @@ async def check_trader():
         # time_one = datetime.datetime.strptime( date + ' ' + hour + ':35:00', '%Y-%m-%d %H:%M:%S')
         # time_two = datetime.datetime.strptime( date + ' ' + hour + ':55:00', '%Y-%m-%d %H:%M:%S')
         
-        if now.hour >= 4 and now.hour <= 9:
+        if hour >= 4 and hour <= 9:
             display_at = show_time_array[0]
         
-        if now.hour >= 10 and now.hour <= 15:
+        if hour >= 10 and hour <= 15:
             display_at = show_time_array[1]
             
-        if now.hour >= 16 and now.hour <= 21:
+        if hour >= 16 and hour <= 21:
             display_at = show_time_array[2]
         
-        if now.hour >= 22 or now.hour <= 3:
+        if hour >= 22 or hour <= 3:
             display_at = show_time_array[3]
 
         response = ''
         
-        # if now < time_two and now > time_one:
         result = await get_detail(int(display_at.timestamp()))
         if len(result) != 0:
             for item in result:
@@ -82,72 +82,96 @@ async def check_trader():
                 if can_notice:
                     card = item.get('_card', {})
                     rapport = item.get('_rapport', {})
-                    rarity = card.get('rarity', '')
                     rarity_array = []
                     send_type_array = []
                     if len(plugin_config.get('send_type')) == 0:
-                        send_type_array = ['card', 'rapport']
+                        send_type_array = ['Card', 'Rapport']
                     else:
                         send_type_array = plugin_config.get('send_type')
                     if len(plugin_config.get('rarity')) == 0:
                         rarity_array = ['Epic', 'Legendary', 'Rare']
                     else:
                         rarity_array = plugin_config.get('rarity')
-                    confirm = False
-                    for rItem in rarity_array:
-                        if rItem == rarity and "card" in send_type_array:
-                            confirm = True
                     location = item.get('_location', {})
                     image = location.get('snapshot', '')
                     lname = location.get('name', '')
                     member = item.get('_member', {})
                     username = member.get('username', '未知人士')
-                    if confirm:
-                        cname = card.get('name', '')
-                        response = lname + f' 出{cname}了！' + f'稀有度为{rarity}' + f' 提报人: {username}'
-                        for qq in plugin_config.get('user_ids'):
-                            await bot.call_api('send_private_msg', **{
-                                'user_id': qq,
-                                'message': response
-                            })
-                        for group in plugin_config.get('group_ids'):
-                            await bot.call_api('send_group_msg', **{
-                                'group_id': group,
-                                'message': response
-                            })
-                        time.sleep(1)
+                    if card is None:
+                        confirm = False
+                    else:
+                        rarity = card.get('rarity', '')
+                        confirm = False
+                        for rItem in rarity_array:
+                            if rItem == rarity and "Card" in send_type_array:
+                                confirm = True
+                        if confirm:
+                            cname = card.get('name', '')
+                            response = lname + f' 出{cname}了！' + f'稀有度为{rarity}' + f' 提报人: {username}'
+                            try:
+                                for qq in plugin_config.get('user_ids'):
+                                    await bot.call_api('send_private_msg', **{
+                                        'user_id': qq,
+                                        'message': response
+                                    })
+                            except:
+                                pass
+                            try:
+                                for group in plugin_config.get('group_ids'):
+                                    await bot.call_api('send_group_msg', **{
+                                        'group_id': group,
+                                        'message': response
+                                    })
+                            except:
+                                pass
+                            time.sleep(1)
                     rapport_confirm = False
-                    if rapport.get('rarity') == 'Legendary' and "rapport" in send_type_array:
-                        rapport_confirm = True
-                    if rapport_confirm:
-                        rname = rapport.get('name', '')
-                        response = lname + f' 出{rname}了！' + '稀有度为传说' + f' 提报人: {username}'
-                        for qq in plugin_config.get('user_ids'):
-                            await bot.call_api('send_private_msg', **{
-                                'user_id': qq,
-                                'message': response
-                            })
-                        for group in plugin_config.get('group_ids'):
-                            await bot.call_api('send_group_msg', **{
-                                'group_id': group,
-                                'message': response
-                            })
-                        time.sleep(1)
+                    if rapport is None:
+                        rapport_confirm = False
+                    else:
+                        if rapport.get('rarity') == 'Legendary' and "Rapport" in send_type_array:
+                            rapport_confirm = True
+                        if rapport_confirm:
+                            rname = rapport.get('name', '')
+                            response = lname + f' 出{rname}了！' + '稀有度为传说' + f' 提报人: {username}'
+                            try:
+                                for qq in plugin_config.get('user_ids'):
+                                    await bot.call_api('send_private_msg', **{
+                                        'user_id': qq,
+                                        'message': response
+                                    })
+                            except:
+                                pass
+                            try:
+                                for group in plugin_config.get('group_ids'):
+                                    await bot.call_api('send_group_msg', **{
+                                        'group_id': group,
+                                        'message': response
+                                    })
+                            except:
+                                pass
+                            time.sleep(1)
                     if confirm or rapport_confirm:
-                        for qq in plugin_config.get('user_ids'):
-                            await bot.call_api('send_private_msg', **{
-                                'user_id': qq,
-                                'message': MessageSegment.image(f"https://www.emrpg.com/{image}")
-                            })
-                        for group in plugin_config.get('group_ids'):
-                            await bot.call_api('send_group_msg', **{
-                                'group_id': group,
-                                'message': MessageSegment.image(f"https://www.emrpg.com/{image}")
-                            })
+                        try:
+                            for qq in plugin_config.get('user_ids'):
+                                await bot.call_api('send_private_msg', **{
+                                    'user_id': qq,
+                                    'message': MessageSegment.image(f"https://www.emrpg.com/{image}")
+                                })
+                        except:
+                            pass
+                        try:
+                            for group in plugin_config.get('group_ids'):
+                                await bot.call_api('send_group_msg', **{
+                                    'group_id': group,
+                                    'message': MessageSegment.image(f"https://www.emrpg.com/{image}")
+                                })
+                        except:
+                            pass
                         time.sleep(1)
-                notice_data[index] = result
-            else:
-                notice_data[index] = []
+            notice_data[index] = result
+        else:
+            notice_data[index] = []
             
 
 trader = on_keyword({"下一个商人"}, priority=1)
