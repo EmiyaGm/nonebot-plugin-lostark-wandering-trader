@@ -174,7 +174,7 @@ async def check_trader():
             notice_data[index] = []
             
 
-trader = on_keyword({"下一个商人"}, priority=1)
+trader = on_keyword({"商人情况"}, priority=1)
 
 async def get_detail(displayAt):
      async with AsyncClient() as client:
@@ -218,29 +218,19 @@ async def _(matcher: Matcher, event: MessageEvent):
     now = datetime.datetime.now()
     hour = str(now.hour)
     date = datetime.datetime.now().date().isoformat()
-    time_start = datetime.datetime.strptime( date + ' ' + hour + ':30:00', '%Y-%m-%d %H:%M:%S')
-    time_two = datetime.datetime.strptime( date + ' ' + hour + ':55:00', '%Y-%m-%d %H:%M:%S')
-    if now < time_two and now > time_start:
-        response = '商人正在出现'
+
+    
+    result = await get_data()
+    if len(result) != 0:
+        response = ''
+        for index,item in enumerate(result):
+            now = datetime.datetime.now()
+            display_start_at = int(item.get('displayStartAt', 0))
+            display_end_at = int(item.get('displayEndAt', 0))
+            display_start_at_new = datetime.datetime.fromtimestamp(display_start_at)
+            display_end_at_new = datetime.datetime.fromtimestamp(display_end_at)
+            response = response + item.get('region', '未知地区') + '的' + item.get('name', '未知商人') + '出现时间为：' + display_start_at_new.__format__( '%Y-%m-%d %H:%M:%S') + ' - ' + display_end_at_new.__format__( '%Y-%m-%d %H:%M:%S') + '\n'
+        response = response + 'by: EmiyaGm'
     else:
-        result = await get_data()
-        if len(result) != 0:
-            response = ''
-            for index,item in enumerate(result):
-                now = datetime.datetime.now()
-                # now_str = now.strftime('%H:%M:%S')
-                times = item.get('times', [])
-                for time in times:
-                    date = datetime.datetime.now().date().isoformat()
-                    time_obj = datetime.datetime.strptime( date + ' ' + time, '%Y-%m-%d %H:%M:%S')
-                    if now.__lt__(time_obj):
-                        response = response + item.get('region', '未知地区') + '的' + item.get('name', '未知商人') + '，即将在 ' + time_obj.strftime('%H:%M:%S')  + ' 时出现' + '\n'
-                        break
-                # if index != len(result) - 1:
-                #     response = response + item.get('region', '未知地区') + '的' + item.get('name', '未知商人') + '\n'
-                # else:
-                #     response = response + item.get('region', '未知地区') + '的' + item.get('name', '未知商人')
-            response = response + 'by: EmiyaGm'
-        else:
-            response = '暂无数据'
+        response = '商人正在备货中...'
     await trader.finish(response)
