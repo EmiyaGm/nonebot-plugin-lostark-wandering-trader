@@ -70,7 +70,7 @@ async def check_trader():
 
         if hour <= 3:
             yesterday = datetime.date.today() - datetime.timedelta(days=1)
-            display_at = datetime.datetime.strptime(yesterday.isoformat + '22:00:00', '%Y-%m-%d %H:%M:%S')
+            display_at = datetime.datetime.strptime(yesterday.isoformat() + '22:00:00', '%Y-%m-%d %H:%M:%S')
 
         response = ''
         
