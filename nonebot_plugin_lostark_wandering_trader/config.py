@@ -8,6 +8,7 @@ class ScopedConfig(BaseModel):
     server_id: int = 14
     rarity: list[str] = []
     send_type: list[str] = []
+    cards: list[str] = []
 
 
 class Config(BaseModel):

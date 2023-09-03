@@ -109,6 +109,12 @@ async def check_trader():
                         for rItem in rarity_array:
                             if rItem == rarity and "Card" in send_type_array:
                                 confirm = True
+                        send_cards = []
+                        send_cards = plugin_config.get('cards')
+                        if len(send_cards) != 0:
+                            confirm = False
+                            if cname in send_cards:
+                                confirm = True
                         if confirm:
                             cname = card.get('name', '')
                             response = lname + f' 出{cname}了！' + f'稀有度为{rarity}' + f' 提报人: {username}'
