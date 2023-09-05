@@ -76,26 +76,54 @@ async def check_trader():
         # time_start = datetime.datetime.strptime( date + ' ' + hour + ':30:00', '%Y-%m-%d %H:%M:%S')
         # time_one = datetime.datetime.strptime( date + ' ' + hour + ':35:00', '%Y-%m-%d %H:%M:%S')
         # time_two = datetime.datetime.strptime( date + ' ' + hour + ':55:00', '%Y-%m-%d %H:%M:%S')
+
+        display_at = None
         
         if hour >= 4 and hour <= 9:
             display_at = show_time_array[0]
         
         if hour >= 10 and hour <= 15:
-            display_at = show_time_array[1]
+            if hour == 15:
+                minute = now.minute
+                if minute >= 30:
+                    display_at = None
+                else:
+                    display_at = show_time_array[1]
+            else:
+                display_at = show_time_array[1]
             
         if hour >= 16 and hour <= 21:
-            display_at = show_time_array[2]
+            if hour == 21:
+                minute = now.minute
+                if minute >= 30:
+                    display_at = None
+                else:
+                    display_at = show_time_array[2]
+            else:
+                display_at = show_time_array[2]
         
         if hour >= 22:
             display_at = show_time_array[3]
 
         if hour <= 3:
-            yesterday = datetime.date.today() - datetime.timedelta(days=1)
-            display_at = datetime.datetime.strptime(yesterday.isoformat() + '22:00:00', '%Y-%m-%d %H:%M:%S')
+            if hour == 3:
+                minute = now.minute
+                if minute >= 30:
+                    display_at = None
+                else:
+                    yesterday = datetime.date.today() - datetime.timedelta(days=1)
+                    display_at = datetime.datetime.strptime(yesterday.isoformat() + '22:00:00', '%Y-%m-%d %H:%M:%S')
+            else:
+                yesterday = datetime.date.today() - datetime.timedelta(days=1)
+                display_at = datetime.datetime.strptime(yesterday.isoformat() + '22:00:00', '%Y-%m-%d %H:%M:%S')
 
         response = ''
+
+        if display_at is None:
+            result = []
+        else:
+            result = await get_detail(int(display_at.timestamp()))
         
-        result = await get_detail(int(display_at.timestamp()))
         if len(result) != 0:
             for item in result:
                 can_notice = True
@@ -122,14 +150,14 @@ async def check_trader():
                     # rapport = item.get('_rapport', {})
                     rarity_array = []
                     send_type_array = []
-                    if len(plugin_config.get('send_type')) == 0:
+                    if len(plugin_config.get('send_type', [])) == 0:
                         send_type_array = ['Card', 'Rapport']
                     else:
-                        send_type_array = plugin_config.get('send_type')
-                    if len(plugin_config.get('rarity')) == 0:
+                        send_type_array = plugin_config.get('send_type', [])
+                    if len(plugin_config.get('rarity', [])) == 0:
                         rarity_array = ['Epic', 'Legendary', 'Rare']
                     else:
-                        rarity_array = plugin_config.get('rarity')
+                        rarity_array = plugin_config.get('rarity', [])
                     location = {}
                     for origin_location in location_data:
                         id = origin_location.get('id', '')
@@ -139,6 +167,7 @@ async def check_trader():
                     lname = location.get('name', '')
                     member = item.get('_member', {})
                     username = member.get('username', '未知人士')
+                    location_confirm = False
                     if len(card_array) == 0:
                         confirm = False
                     else:
@@ -156,8 +185,9 @@ async def check_trader():
                                     confirm = True
                             if confirm:
                                 response = lname + f' 出{cname}了！' + f'稀有度为{rarity}' + f' 提报人: {username}'
+                                location_confirm = True
                                 try:
-                                    for qq in plugin_config.get('user_ids'):
+                                    for qq in plugin_config.get('user_ids', []):
                                         await bot.call_api('send_private_msg', **{
                                             'user_id': qq,
                                             'message': response
@@ -165,7 +195,7 @@ async def check_trader():
                                 except:
                                     pass
                                 try:
-                                    for group in plugin_config.get('group_ids'):
+                                    for group in plugin_config.get('group_ids', []):
                                         await bot.call_api('send_group_msg', **{
                                             'group_id': group,
                                             'message': response
@@ -173,18 +203,19 @@ async def check_trader():
                                 except:
                                     pass
                                 time.sleep(1)
-                    rapport_confirm = False
                     if len(rapport_array) == 0:
                         rapport_confirm = False
                     else:
                         for rapport in rapport_array:
+                            rapport_confirm = False
                             if rapport.get('rarity') == 'Legendary' and "Rapport" in send_type_array:
                                 rapport_confirm = True
                             if rapport_confirm:
                                 rname = rapport.get('name', '')
                                 response = lname + f' 出{rname}了！' + '稀有度为传说' + f' 提报人: {username}'
+                                location_confirm = True
                                 try:
-                                    for qq in plugin_config.get('user_ids'):
+                                    for qq in plugin_config.get('user_ids', []):
                                         await bot.call_api('send_private_msg', **{
                                             'user_id': qq,
                                             'message': response
@@ -192,7 +223,7 @@ async def check_trader():
                                 except:
                                     pass
                                 try:
-                                    for group in plugin_config.get('group_ids'):
+                                    for group in plugin_config.get('group_ids', []):
                                         await bot.call_api('send_group_msg', **{
                                             'group_id': group,
                                             'message': response
@@ -200,9 +231,9 @@ async def check_trader():
                                 except:
                                     pass
                                 time.sleep(1)
-                    if confirm or rapport_confirm:
+                    if location_confirm:
                         try:
-                            for qq in plugin_config.get('user_ids'):
+                            for qq in plugin_config.get('user_ids', []):
                                 await bot.call_api('send_private_msg', **{
                                     'user_id': qq,
                                     'message': MessageSegment.image(f"https://www.emrpg.com/{image}")
@@ -210,7 +241,7 @@ async def check_trader():
                         except:
                             pass
                         try:
-                            for group in plugin_config.get('group_ids'):
+                            for group in plugin_config.get('group_ids', []):
                                 await bot.call_api('send_group_msg', **{
                                     'group_id': group,
                                     'message': MessageSegment.image(f"https://www.emrpg.com/{image}")
