@@ -37,9 +37,30 @@ except:
     
 notice_data = []
 
+card_data = []
+
+rapport_data = []
+
+location_data = []
+
+get_driver = get_driver()
+
+@get_driver.on_startup
+async def _():
+    global card_data
+    global rapport_data
+    global location_data
+    card_data = await get_cards()
+    rapport_data = await get_rapports()
+    location_data = await get_locations()
+
+
 @scheduler.scheduled_job("cron", minute=f"*/{plugin_config.get('time')}", id="check_trader")
 async def check_trader():
     global notice_data
+    global card_data
+    global rapport_data
+    global location_data
     bots = get_bots().values()
     if len(notice_data) == 0:
         for bot in bots:
@@ -84,8 +105,21 @@ async def check_trader():
                     if nid == id:
                         can_notice = False
                 if can_notice:
-                    card = item.get('_card', {})
-                    rapport = item.get('_rapport', {})
+                    # card = item.get('_card', {})
+                    cardIds = item.get('cardId', '').split(",")
+                    rapportIds = item.get('rapportId', '').split(",")
+                    locationId = item.get('locationId', '')
+                    card_array = []
+                    rapport_array = []
+                    for origin_card in card_data:
+                        id = origin_card.get('id', '')
+                        if id in cardIds:
+                            card_array.append(origin_card)
+                    for origin_rapport in rapport_data:
+                        id = origin_rapport.get('id', '')
+                        if id in rapportIds:
+                            rapport_array.append(origin_rapport)
+                    # rapport = item.get('_rapport', {})
                     rarity_array = []
                     send_type_array = []
                     if len(plugin_config.get('send_type')) == 0:
@@ -96,71 +130,76 @@ async def check_trader():
                         rarity_array = ['Epic', 'Legendary', 'Rare']
                     else:
                         rarity_array = plugin_config.get('rarity')
-                    location = item.get('_location', {})
+                    location = {}
+                    for origin_location in location_data:
+                        id = origin_location.get('id', '')
+                        if id == locationId:
+                            location = origin_location
                     image = location.get('snapshot', '')
                     lname = location.get('name', '')
                     member = item.get('_member', {})
                     username = member.get('username', '未知人士')
-                    if card is None:
+                    if len(card_array) == 0:
                         confirm = False
                     else:
-                        rarity = card.get('rarity', '')
-                        confirm = False
-                        for rItem in rarity_array:
-                            if rItem == rarity and "Card" in send_type_array:
-                                confirm = True
-                        send_cards = []
-                        send_cards = plugin_config.get('cards')
-                        if len(send_cards) != 0:
+                        for card in card_array:
+                            rarity = card.get('rarity', '')
                             confirm = False
-                            if cname in send_cards:
-                                confirm = True
-                        if confirm:
+                            for rItem in rarity_array:
+                                if rItem == rarity and "Card" in send_type_array:
+                                    confirm = True
+                            send_cards = plugin_config.get('cards', [])
                             cname = card.get('name', '')
-                            response = lname + f' 出{cname}了！' + f'稀有度为{rarity}' + f' 提报人: {username}'
-                            try:
-                                for qq in plugin_config.get('user_ids'):
-                                    await bot.call_api('send_private_msg', **{
-                                        'user_id': qq,
-                                        'message': response
-                                    })
-                            except:
-                                pass
-                            try:
-                                for group in plugin_config.get('group_ids'):
-                                    await bot.call_api('send_group_msg', **{
-                                        'group_id': group,
-                                        'message': response
-                                    })
-                            except:
-                                pass
-                            time.sleep(1)
+                            if len(send_cards) != 0:
+                                confirm = False
+                                if cname in send_cards:
+                                    confirm = True
+                            if confirm:
+                                response = lname + f' 出{cname}了！' + f'稀有度为{rarity}' + f' 提报人: {username}'
+                                try:
+                                    for qq in plugin_config.get('user_ids'):
+                                        await bot.call_api('send_private_msg', **{
+                                            'user_id': qq,
+                                            'message': response
+                                        })
+                                except:
+                                    pass
+                                try:
+                                    for group in plugin_config.get('group_ids'):
+                                        await bot.call_api('send_group_msg', **{
+                                            'group_id': group,
+                                            'message': response
+                                        })
+                                except:
+                                    pass
+                                time.sleep(1)
                     rapport_confirm = False
-                    if rapport is None:
+                    if len(rapport_array) == 0:
                         rapport_confirm = False
                     else:
-                        if rapport.get('rarity') == 'Legendary' and "Rapport" in send_type_array:
-                            rapport_confirm = True
-                        if rapport_confirm:
-                            rname = rapport.get('name', '')
-                            response = lname + f' 出{rname}了！' + '稀有度为传说' + f' 提报人: {username}'
-                            try:
-                                for qq in plugin_config.get('user_ids'):
-                                    await bot.call_api('send_private_msg', **{
-                                        'user_id': qq,
-                                        'message': response
-                                    })
-                            except:
-                                pass
-                            try:
-                                for group in plugin_config.get('group_ids'):
-                                    await bot.call_api('send_group_msg', **{
-                                        'group_id': group,
-                                        'message': response
-                                    })
-                            except:
-                                pass
-                            time.sleep(1)
+                        for rapport in rapport_array:
+                            if rapport.get('rarity') == 'Legendary' and "Rapport" in send_type_array:
+                                rapport_confirm = True
+                            if rapport_confirm:
+                                rname = rapport.get('name', '')
+                                response = lname + f' 出{rname}了！' + '稀有度为传说' + f' 提报人: {username}'
+                                try:
+                                    for qq in plugin_config.get('user_ids'):
+                                        await bot.call_api('send_private_msg', **{
+                                            'user_id': qq,
+                                            'message': response
+                                        })
+                                except:
+                                    pass
+                                try:
+                                    for group in plugin_config.get('group_ids'):
+                                        await bot.call_api('send_group_msg', **{
+                                            'group_id': group,
+                                            'message': response
+                                        })
+                                except:
+                                    pass
+                                time.sleep(1)
                     if confirm or rapport_confirm:
                         try:
                             for qq in plugin_config.get('user_ids'):
@@ -186,6 +225,60 @@ async def check_trader():
 
 trader = on_keyword({"商人情况"}, priority=1)
 
+async def get_locations():
+     async with AsyncClient() as client:
+        headers = {
+        'X-Ajax': '1',
+        'Cookie': 'acw_tc=707c9fc716906220300653664e550e283e11113d450a6e9e21bb7af38e99ab; UBtd_671d_saltkey=l3nfa1If; UBtd_671d_lastvisit=1690618430; UBtd_671d_sid=w61IJF; UBtd_671d_lastact=1690623811%09plugin.php%09; UBtd_671d_sid=O3zbk8; UBtd_671d_lastact=1690799529%09plugin.php%09',
+        'User-Agent': 'Apifox/1.0.0 (https://apifox.com)',
+        'Accept': '*/*',
+        'Host': 'www.emrpg.com',
+        'Connection': 'keep-alive'
+        }
+        result = []
+        try:
+            res = await client.get("https://emrpg.com/plugin.php?page=0&perPage=0&fromServer=lostarkcn&uri=merchants/locations&id=tj_emrpg", headers=headers)
+            result = res.json().get('data' , {}).get('list', [])
+        except:
+            result = []
+        return result
+
+async def get_rapports():
+     async with AsyncClient() as client:
+        headers = {
+        'X-Ajax': '1',
+        'Cookie': 'acw_tc=707c9fc716906220300653664e550e283e11113d450a6e9e21bb7af38e99ab; UBtd_671d_saltkey=l3nfa1If; UBtd_671d_lastvisit=1690618430; UBtd_671d_sid=w61IJF; UBtd_671d_lastact=1690623811%09plugin.php%09; UBtd_671d_sid=O3zbk8; UBtd_671d_lastact=1690799529%09plugin.php%09',
+        'User-Agent': 'Apifox/1.0.0 (https://apifox.com)',
+        'Accept': '*/*',
+        'Host': 'www.emrpg.com',
+        'Connection': 'keep-alive'
+        }
+        result = []
+        try:
+            res = await client.get("https://emrpg.com/plugin.php?page=0&perPage=0&fromServer=lostarkcn&uri=merchants/rapports&id=tj_emrpg", headers=headers)
+            result = res.json().get('data' , {}).get('list', [])
+        except:
+            result = []
+        return result
+
+async def get_cards():
+     async with AsyncClient() as client:
+        headers = {
+        'X-Ajax': '1',
+        'Cookie': 'acw_tc=707c9fc716906220300653664e550e283e11113d450a6e9e21bb7af38e99ab; UBtd_671d_saltkey=l3nfa1If; UBtd_671d_lastvisit=1690618430; UBtd_671d_sid=w61IJF; UBtd_671d_lastact=1690623811%09plugin.php%09; UBtd_671d_sid=O3zbk8; UBtd_671d_lastact=1690799529%09plugin.php%09',
+        'User-Agent': 'Apifox/1.0.0 (https://apifox.com)',
+        'Accept': '*/*',
+        'Host': 'www.emrpg.com',
+        'Connection': 'keep-alive'
+        }
+        result = []
+        try:
+            res = await client.get("https://emrpg.com/plugin.php?page=0&perPage=0&fromServer=lostarkcn&uri=merchants/cards&id=tj_emrpg", headers=headers)
+            result = res.json().get('data' , {}).get('list', [])
+        except:
+            result = []
+        return result
+
 async def get_detail(displayAt):
      async with AsyncClient() as client:
         headers = {
@@ -198,7 +291,7 @@ async def get_detail(displayAt):
         }
         result = []
         try:
-            res = await client.get(f"https://www.emrpg.com/plugin.php?displayAt={displayAt}&fromServer=lostarkcn&serverId={plugin_config.get('server_id')}&uri=merchants/active&_pipes=withCard,withRapport,withLocation,withMember&id=tj_emrpg", headers=headers)
+            res = await client.get(f"https://www.emrpg.com/plugin.php?displayAt={displayAt}&fromServer=lostarkcn&serverId={plugin_config.get('server_id')}&uri=merchants/active&_pipes=withMember&id=tj_emrpg", headers=headers)
             result = res.json().get('data' , [])
         except:
             result = []
