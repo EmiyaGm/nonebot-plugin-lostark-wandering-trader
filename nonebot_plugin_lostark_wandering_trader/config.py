@@ -9,6 +9,7 @@ class ScopedConfig(BaseModel):
     rarity: list[str] = []
     send_type: list[str] = []
     cards: list[str] = []
+    location_image: bool = True
 
 
 class Config(BaseModel):

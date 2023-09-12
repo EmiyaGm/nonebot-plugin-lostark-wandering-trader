@@ -231,7 +231,8 @@ async def check_trader():
                                 except:
                                     pass
                                 time.sleep(1)
-                    if location_confirm:
+                    location_image = plugin_config.get('location_image', True)
+                    if location_confirm and location_image:
                         try:
                             for qq in plugin_config.get('user_ids', []):
                                 await bot.call_api('send_private_msg', **{
