@@ -103,12 +103,12 @@ pip install nonebot-plugin-lostark-wandering-trader -U
   - Card : 卡牌
   - Rapport : 礼物
 
-## TARDER__CARDS
+## TRADER__CARDS
 - 类型: `list`
 - 默认值: `[]`
 - 说明: 需要通告的卡片，如果不填或是空，则默认会将所有卡牌通告
 
-## TARDER__LOCATION_IMAGE
+## TRADER__LOCATION_IMAGE
 - 类型: `bool`
 - 默认值: `True`
 - 说明: 是否需要发送位置图片，默认为发送位置图片
