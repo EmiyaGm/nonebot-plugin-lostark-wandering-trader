@@ -2,13 +2,13 @@ from pydantic import BaseModel
 
 
 class ScopedConfig(BaseModel):
-    user_ids: list[int] = []
-    group_ids: list[int] = []
+    user_ids: list = []
+    group_ids: list = []
     time: int = 1
     server_id: int = 14
-    rarity: list[str] = []
-    send_type: list[str] = []
-    cards: list[str] = []
+    rarity: list = []
+    send_type: list = []
+    cards: list = []
     location_image: bool = True
 
 
