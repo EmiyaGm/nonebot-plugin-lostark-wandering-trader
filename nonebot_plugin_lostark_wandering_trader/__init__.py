@@ -257,6 +257,8 @@ async def check_trader():
 
 trader = on_keyword({"商人情况"}, priority=1)
 
+favor = on_keyword({"好感度"}, priority=1)
+
 async def get_locations():
      async with AsyncClient() as client:
         headers = {
@@ -369,3 +371,15 @@ async def _(matcher: Matcher, event: MessageEvent):
     else:
         response = '商人正在备货中...'
     await trader.finish(response)
+
+
+@favor.handle()
+async def _(matcher: Matcher, event: MessageEvent):
+    npc = ""
+    if args := event.get_plaintext().split("好感度"):
+        npc = args[0].strip() or args[1].strip()
+        if not npc:
+            await favor.finish("请确定需要查询好感度的NPC名称")
+        if (args[0].strip() == "") == (args[1].strip() == ""):
+            await favor.finish()
+        
