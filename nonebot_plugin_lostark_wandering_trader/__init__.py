@@ -7,6 +7,7 @@ from httpx import Response, AsyncClient
 import datetime
 import time
 from .config import Config
+from display_at import get_display_at
 
 __plugin_meta__ = PluginMetadata(
     name="命运方舟流浪商人卡牌刷新提示",
@@ -54,8 +55,13 @@ async def _():
     rapport_data = await get_rapports()
     location_data = await get_locations()
 
+scheduler_time = 1
+if plugin_config.get('time', 1) >= 60:
+    scheduler_time = 59
+else:
+    scheduler_time = plugin_config.get('time', 1)
 
-@scheduler.scheduled_job("cron", minute=f"*/{plugin_config.get('time')}", id="check_trader")
+@scheduler.scheduled_job("cron", minute=f"*/{scheduler_time}", id="check_trader")
 async def check_trader():
     global notice_data
     global card_data
@@ -66,57 +72,9 @@ async def check_trader():
         for bot in bots:
             notice_data.append([])
     for index,bot in enumerate(bots):
-        now = datetime.datetime.now()
-
-        hour = now.hour
-
-        date = datetime.datetime.now().date().isoformat()
         
-        show_time_array = [datetime.datetime.strptime( date + ' ' + '04:00:00', '%Y-%m-%d %H:%M:%S'), datetime.datetime.strptime( date + ' ' + '10:00:00', '%Y-%m-%d %H:%M:%S'), datetime.datetime.strptime( date + ' ' + '16:00:00', '%Y-%m-%d %H:%M:%S'), datetime.datetime.strptime( date + ' ' + '22:00:00', '%Y-%m-%d %H:%M:%S'),]
-        # time_start = datetime.datetime.strptime( date + ' ' + hour + ':30:00', '%Y-%m-%d %H:%M:%S')
-        # time_one = datetime.datetime.strptime( date + ' ' + hour + ':35:00', '%Y-%m-%d %H:%M:%S')
-        # time_two = datetime.datetime.strptime( date + ' ' + hour + ':55:00', '%Y-%m-%d %H:%M:%S')
-
-        display_at = None
+        display_at = get_display_at()
         
-        if hour >= 4 and hour <= 9:
-            display_at = show_time_array[0]
-        
-        if hour >= 10 and hour <= 15:
-            if hour == 15:
-                minute = now.minute
-                if minute >= 30:
-                    display_at = None
-                else:
-                    display_at = show_time_array[1]
-            else:
-                display_at = show_time_array[1]
-            
-        if hour >= 16 and hour <= 21:
-            if hour == 21:
-                minute = now.minute
-                if minute >= 30:
-                    display_at = None
-                else:
-                    display_at = show_time_array[2]
-            else:
-                display_at = show_time_array[2]
-        
-        if hour >= 22:
-            display_at = show_time_array[3]
-
-        if hour <= 3:
-            if hour == 3:
-                minute = now.minute
-                if minute >= 30:
-                    display_at = None
-                else:
-                    yesterday = datetime.date.today() - datetime.timedelta(days=1)
-                    display_at = datetime.datetime.strptime(yesterday.isoformat() + '22:00:00', '%Y-%m-%d %H:%M:%S')
-            else:
-                yesterday = datetime.date.today() - datetime.timedelta(days=1)
-                display_at = datetime.datetime.strptime(yesterday.isoformat() + '22:00:00', '%Y-%m-%d %H:%M:%S')
-
         response = ''
 
         if display_at is None:
