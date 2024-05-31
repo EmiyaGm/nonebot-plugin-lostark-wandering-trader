@@ -308,6 +308,42 @@ async def get_data():
         return result
 
 
+async def get_npc_friendship():
+    async with AsyncClient() as client:
+        headers = {
+        'X-Ajax': '1',
+        'Cookie': 'acw_tc=707c9fc716906220300653664e550e283e11113d450a6e9e21bb7af38e99ab; UBtd_671d_saltkey=l3nfa1If; UBtd_671d_lastvisit=1690618430; UBtd_671d_sid=Z6bM50; UBtd_671d_sendmail=1; UBtd_671d_lastact=1690622038%09plugin.php%09; UBtd_671d_saltkey=AMcqaqQh; UBtd_671d_lastvisit=1690616006; UBtd_671d_sid=PeEjTE; UBtd_671d_lastact=1690622255%09plugin.php%09; acw_tc=76b20f6b16906221102315601e4147a5e05cf53f9b496a18f9a8670e71ca6d',
+        'User-Agent': 'Apifox/1.0.0 (https://apifox.com)',
+        'Accept': '*/*',
+        'Host': 'www.emrpg.com',
+        'Connection': 'keep-alive'
+        }
+        result = []
+        try:
+            res = await client.get(f"https://emrpg.com/plugin.php?uri=games/lostark/gameData/npcFriendship&_pipes=withContinent&id=tj_emrpg", headers=headers)
+            result = res.json().get('data' , [])
+        except:
+            result = []
+        return result
+
+async def get_npc_friendship_reward(primaryKey):
+     async with AsyncClient() as client:
+        headers = {
+        'X-Ajax': '1',
+        'Cookie': 'acw_tc=707c9fc716906220300653664e550e283e11113d450a6e9e21bb7af38e99ab; UBtd_671d_saltkey=l3nfa1If; UBtd_671d_lastvisit=1690618430; UBtd_671d_sid=w61IJF; UBtd_671d_lastact=1690623811%09plugin.php%09; UBtd_671d_sid=O3zbk8; UBtd_671d_lastact=1690799529%09plugin.php%09',
+        'User-Agent': 'Apifox/1.0.0 (https://apifox.com)',
+        'Accept': '*/*',
+        'Host': 'www.emrpg.com',
+        'Connection': 'keep-alive'
+        }
+        result = []
+        try:
+            res = await client.get(f"https://emrpg.com/plugin.php?uri=games/lostark/gameData/npcFriendship/reward&_pipes=withContinent&id=tj_emrpg&primaryKey={primaryKey}", headers=headers)
+            result = res.json().get('data' , {})
+        except:
+            result = {}
+        return result
+
 @trader.handle()
 async def _(matcher: Matcher, event: MessageEvent):
     now = datetime.datetime.now()
@@ -338,6 +374,23 @@ async def _(matcher: Matcher, event: MessageEvent):
         npc = args[0].strip() or args[1].strip()
         if not npc:
             await favor.finish("请确定需要查询好感度的NPC名称")
-        if (args[0].strip() == "") == (args[1].strip() == ""):
-            await favor.finish()
+        else:
+            result = await get_npc_friendship()
+            if len(result) != 0:
+                response = ''
+                for index,item in enumerate(result):
+                    if npc == item.get('NpcName', ''):
+                        primaryKey = item.get('PrimaryKey', 0)
+                if not primaryKey:
+                    response = "暂无NPC数据..."
+                else:
+                    reward = await get_npc_friendship_reward(primaryKey)
+                    if len(reward.get(primaryKey, {}).keys()) != 0:
+                        reward_data = reward.get(primaryKey, {})
+                        if len(reward_data.get('stuffs', [])) != 0:
+                            response = response + reward_data.get('stuffs')[0] + 'x' + str(reward_data.get('ItemAmount1', 0)) + '\n'
+                        response = response + 'by: EmiyaGm'
+            else:
+                response = '暂无NPC数据...'
+            await favor.finish(response)
         
