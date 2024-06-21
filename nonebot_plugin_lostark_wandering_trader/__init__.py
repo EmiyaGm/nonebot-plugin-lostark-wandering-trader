@@ -51,6 +51,17 @@ friend_reward_stage = {
     '3': '信赖'
 }
 
+friend_ship_stage = {
+    '1': '普通1',
+    '2': '普通2',
+    '3': '在意1',
+    '4': '在意2',
+    '5': '在意3',
+    '6': '友好1',
+    '7': '友好2',
+    '8': '友好3',
+}
+
 get_driver = get_driver()
 
 @get_driver.on_startup
@@ -349,6 +360,42 @@ async def get_npc_friendship_reward(primaryKey):
         except:
             result = {}
         return result
+     
+async def get_npc_friendship_stage(primaryKey):
+     async with AsyncClient() as client:
+        headers = {
+        'X-Ajax': '1',
+        'Cookie': 'acw_tc=707c9fc716906220300653664e550e283e11113d450a6e9e21bb7af38e99ab; UBtd_671d_saltkey=l3nfa1If; UBtd_671d_lastvisit=1690618430; UBtd_671d_sid=w61IJF; UBtd_671d_lastact=1690623811%09plugin.php%09; UBtd_671d_sid=O3zbk8; UBtd_671d_lastact=1690799529%09plugin.php%09',
+        'User-Agent': 'Apifox/1.0.0 (https://apifox.com)',
+        'Accept': '*/*',
+        'Host': 'www.emrpg.com',
+        'Connection': 'keep-alive'
+        }
+        result = []
+        try:
+            res = await client.get(f"https://emrpg.com/plugin.php?priamryKey={primaryKey}&uri=games/lostark/gameData/npcFriendship/grade&id=tj_emrpg", headers=headers)
+            result = res.json().get('data' , {})
+        except:
+            result = {}
+        return result
+     
+async def get_npc_friendship_gift(primaryKey):
+     async with AsyncClient() as client:
+        headers = {
+        'X-Ajax': '1',
+        'Cookie': 'acw_tc=707c9fc716906220300653664e550e283e11113d450a6e9e21bb7af38e99ab; UBtd_671d_saltkey=l3nfa1If; UBtd_671d_lastvisit=1690618430; UBtd_671d_sid=w61IJF; UBtd_671d_lastact=1690623811%09plugin.php%09; UBtd_671d_sid=O3zbk8; UBtd_671d_lastact=1690799529%09plugin.php%09',
+        'User-Agent': 'Apifox/1.0.0 (https://apifox.com)',
+        'Accept': '*/*',
+        'Host': 'www.emrpg.com',
+        'Connection': 'keep-alive'
+        }
+        result = []
+        try:
+            res = await client.get(f"https://emrpg.com/plugin.php?primaryKey={primaryKey}&classifyType=19&uri=games/lostark/gameData/npcFriendship/actionFilter&_pipes=withFriendshipItem&id=tj_emrpg", headers=headers)
+            result = res.json().get('data' , {})
+        except:
+            result = {}
+        return result
 
 @trader.handle()
 async def _(matcher: Matcher, event: MessageEvent):
@@ -376,20 +423,26 @@ async def _(matcher: Matcher, event: MessageEvent):
 @favor.handle()
 async def _(matcher: Matcher, event: MessageEvent):
     npc = ""
-    if args := event.get_plaintext().split("好感度奖励"):
+    if args := event.get_plaintext().split("好感度"):
         npc = args[0].strip() or args[1].strip()
         if not npc:
-            await favor.finish("请确定需要查询好感度奖励的NPC名称")
+            await favor.finish("请确定需要查询好感度的NPC名称")
         else:
             result = await get_npc_friendship()
             if len(result) != 0:
                 response = ''
                 for index,item in enumerate(result):
                     if npc == item.get('NpcName', ''):
-                        primaryKey = item.get('PrimaryKey', '0')
+                        primaryKey = item.get('PrimaryKey', 0)
+                        Tier = item.get('Tier', 0)
                 if not primaryKey:
                     response = "暂无NPC数据..."
                 else:
+                    stages = await get_npc_friendship_stage(Tier)
+                    stage = stages.get(str(Tier), {})
+                    response = npc + '好感度相关信息\n'
+                    for i in range(1, 8):
+                        response = response + friend_ship_stage.get(str(i), '') + '：' + stage.get(f'GradeMaxPoint{i}', 0) + '\n'
                     reward = await get_npc_friendship_reward(primaryKey)
                     if len(reward.get(str(primaryKey), {}).keys()) != 0:
                         reward_data = reward.get(str(primaryKey), {})
