@@ -44,6 +44,13 @@ rapport_data = []
 
 location_data = []
 
+friend_reward_stage = {
+    '0': '普通',
+    '1': '关注',
+    '2': '友好',
+    '3': '信赖'
+}
+
 get_driver = get_driver()
 
 @get_driver.on_startup
@@ -72,9 +79,9 @@ async def check_trader():
         for bot in bots:
             notice_data.append([])
     for index,bot in enumerate(bots):
-        
+
         display_at = get_display_at()
-        
+
         response = ''
 
         if display_at is None:
@@ -307,7 +314,6 @@ async def get_data():
             result = []
         return result
 
-
 async def get_npc_friendship():
     async with AsyncClient() as client:
         headers = {
@@ -325,7 +331,7 @@ async def get_npc_friendship():
         except:
             result = []
         return result
-
+    
 async def get_npc_friendship_reward(primaryKey):
      async with AsyncClient() as client:
         headers = {
@@ -370,27 +376,34 @@ async def _(matcher: Matcher, event: MessageEvent):
 @favor.handle()
 async def _(matcher: Matcher, event: MessageEvent):
     npc = ""
-    if args := event.get_plaintext().split("好感度"):
+    if args := event.get_plaintext().split("好感度奖励"):
         npc = args[0].strip() or args[1].strip()
         if not npc:
-            await favor.finish("请确定需要查询好感度的NPC名称")
+            await favor.finish("请确定需要查询好感度奖励的NPC名称")
         else:
             result = await get_npc_friendship()
             if len(result) != 0:
                 response = ''
                 for index,item in enumerate(result):
                     if npc == item.get('NpcName', ''):
-                        primaryKey = item.get('PrimaryKey', 0)
+                        primaryKey = item.get('PrimaryKey', '0')
                 if not primaryKey:
                     response = "暂无NPC数据..."
                 else:
                     reward = await get_npc_friendship_reward(primaryKey)
-                    if len(reward.get(primaryKey, {}).keys()) != 0:
-                        reward_data = reward.get(primaryKey, {})
-                        if len(reward_data.get('stuffs', [])) != 0:
-                            response = response + reward_data.get('stuffs')[0] + 'x' + str(reward_data.get('ItemAmount1', 0)) + '\n'
+                    if len(reward.get(str(primaryKey), {}).keys()) != 0:
+                        reward_data = reward.get(str(primaryKey), {})
+                        for rIndex,rItem in enumerate(reward_data):
+                            itemResponse = friend_reward_stage.get(str(rIndex), '') + '奖励：'
+                            rItemData = reward_data.get(rItem, {})
+                            if len(rItemData.get('stuffs', [])) != 0:
+                                for sIndex,sItem in enumerate(rItemData.get('stuffs', [])):
+                                    itemResponse = itemResponse + sItem.get('Name') + 'x' + str(sItem.get('rewardAmount', 0)) + ','
+                            response = response + itemResponse + '\n'
                         response = response + 'by: EmiyaGm'
+                    else:
+                        response = '暂无NPC数据...'
             else:
                 response = '暂无NPC数据...'
             await favor.finish(response)
-        
+            
