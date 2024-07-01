@@ -63,6 +63,7 @@ pip install nonebot-plugin-lostark-wandering-trader -U
 
 - 发送 Command `商人情况` 获取某个服务器当前有无商人，有商人的话则返回持续出现的时间
 - 每隔x分钟会自动通报稀有度在蓝色以上的卡片刷新位置
+- 发送 Command `xx好感度` xx为npc中文名称，获取指定npc好感度相关信息，包括偏好礼物，阶段好感度值，阶段礼物
 
 ## 配置项
 
