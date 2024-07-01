@@ -392,9 +392,9 @@ async def get_npc_friendship_gift(primaryKey):
         result = []
         try:
             res = await client.get(f"https://emrpg.com/plugin.php?primaryKey={primaryKey}&classifyType=19&uri=games/lostark/gameData/npcFriendship/actionFilter&_pipes=withFriendshipItem&id=tj_emrpg", headers=headers)
-            result = res.json().get('data' , {})
+            result = res.json().get('data' , [])
         except:
-            result = {}
+            result = []
         return result
 
 @trader.handle()
@@ -440,10 +440,16 @@ async def _(matcher: Matcher, event: MessageEvent):
                 else:
                     stages = await get_npc_friendship_stage(Tier)
                     stage = stages.get(str(Tier), {})
+                    gifts = await get_npc_friendship_gift(primaryKey)
                     response = npc + '好感度相关信息\n'
+                    response = response + '好感度阶段\n'
                     for i in range(1, 8):
-                        response = response + friend_ship_stage.get(str(i), '') + '：' + stage.get(f'GradeMaxPoint{i}', 0) + '\n'
+                        response = response + friend_ship_stage.get(str(i), '') + '：' + str(stage.get(f'GradeMaxPoint{i}', 0)) + '\n'
                     reward = await get_npc_friendship_reward(primaryKey)
+                    response = response + '需要的礼物\n'
+                    for g in gifts:
+                        response = response + g.get('stuff', {}).get('Name', '') + '+' + str(g.get('stuff', {}).get('friendshipItem', {}).get('FriendshipPoint', 0)) + '好感度\n'
+                    response = response + '各阶段奖励\n'
                     if len(reward.get(str(primaryKey), {}).keys()) != 0:
                         reward_data = reward.get(str(primaryKey), {})
                         for rIndex,rItem in enumerate(reward_data):
