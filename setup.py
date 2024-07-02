@@ -12,7 +12,7 @@ except FileNotFoundError:
 
 setuptools.setup(
     name="nonebot_plugin_lostark_wandering_trader",
-    version="0.2.5",
+    version="0.2.6",
     license='MIT',
     author="EmiyaGm",
     author_email="464723943@qq.com",
